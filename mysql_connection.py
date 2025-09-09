@@ -2,7 +2,6 @@ import mysql.connector
 import sys
 import os
 from datetime import date
-import mysql
 
 print("Python interpreter:", sys.executable)
 
