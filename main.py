@@ -159,16 +159,5 @@ file=next(Path("Webpage/students").glob("*.jp*g"))
 mark_attendence(file)
 # os.remove(file)
 
-
-# --- 9. Display grouped tuple ---
-# print("\nFinal tuple (roll_no, 5 images):")
-# for roll, images in roll_n_images:
-#     print(f"Roll: {roll}, Total images: {len(images)}")
-
-
-
-
-
-
 cursor.close()
 conn.close()
