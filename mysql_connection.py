@@ -2,6 +2,7 @@ import mysql.connector
 import sys
 import os
 from datetime import date
+import mysql
 
 print("Python interpreter:", sys.executable)
 
@@ -37,28 +38,28 @@ CREATE TABLE IF NOT EXISTS student_images (
         )
  """)
 
-# students = [
-#     ("101","Nisarg Patel",[
-#         "/Users/apple/Documents/ML_prog/sih/students/s1-1.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s1-2.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s1-3.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s1-4.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s1-5.jpeg",
-#     ]),
-#     ("102","Devang Ajudiya",[ 
-#         "/Users/apple/Documents/ML_prog/sih/students/s2-1.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s2-2.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s2-3.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s2-4.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s2-5.jpeg",
-#     ]),
-#     ("103","Netra Patel",[ 
-#         "/Users/apple/Documents/ML_prog/sih/students/s3-1.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s3-2.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s3-3.jpeg",
-#         "/Users/apple/Documents/ML_prog/sih/students/s3-4.jpeg",
-#     ])
-# ]
+students = [
+    ("101","Nisarg Patel",[
+        "training/students/s1-1.jpeg",
+        "training/students/s1-2.jpeg",
+        "training/students/s1-3.jpeg",
+        "training/students/s1-4.jpeg",
+        "training/students/s1-5.jpeg",
+    ]),
+    ("102","Devang Ajudiya",[ 
+        "training/students/s2-1.jpeg",
+        "training/students/s2-2.jpeg",
+        "training/students/s2-3.jpeg",
+        "training/students/s2-4.jpeg",
+        "training/students/s2-5.jpeg",
+    ]),
+    ("103","Netra Patel",[ 
+        "training/students/s3-1.jpeg",
+        "training/students/s3-2.jpeg",
+        "training/students/s3-3.jpeg",
+        "training/students/s3-4.jpeg",
+    ])
+]
 
 # --- 4. Utility: convert image to binary ---
 def convert_to_binary(filename):
