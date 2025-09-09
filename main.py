@@ -147,6 +147,7 @@ def mark_attendence( image_location: str, model: str = "hog",encodings_location:
             roll=int(roll)
             val=("P",roll,date(2025, 9, 9))
             cursor.execute("""UPDATE attendance_2 SET status=%s WHERE roll_no=%s AND attendance_date=%s""",val)
+            conn.commit()
             print(type(val[0]),type(val[1]),type(val[2]))
             print(roll)
 
