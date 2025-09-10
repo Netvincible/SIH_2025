@@ -67,7 +67,13 @@ app.post("/students", upload.single("photo"), (req, res) => {
   }
 
   console.log("✅ Photo uploaded:", req.file);
-
+//   setTimeout(function() {
+//   const process=spawn("python3", ["main.py", req.file.path]);
+//   let output ="";
+//   process.stdout.on("data",(data)=>{
+//     output+=data.toString();
+//   });
+// }, 2000);
   const process=spawn("python3", ["main.py", req.file.path]);
   let output ="";
   process.stdout.on("data",(data)=>{

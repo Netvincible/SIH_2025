@@ -49,10 +49,16 @@ def convert_to_binary(filename):
 
 # --- 3. Insert into attendance table --- 
 def set_absent():
+    today=datetime.today()
+    cursor.execute("""select count(*) where attendance_date=%s;""",today)
+    exists=cursor.fetchall()
+    if(exists):
+        return
     manual_attendance = [
-        ("Nisarg Patel", 101, date(2025, 9, 9),"A"),
-        ("Devang Ajudiya",102,date(2025, 9, 9),"A"),
-        ("Netra Patel",103,date(2025, 9, 9),"A")
+        ("Nisarg Patel", 101, today,"A"),
+        ("Devang Ajudiya",102,today,"A"),
+        ("Netra Patel",103,today,"A"),
+        ("Vedanti Shukla",104,today,"A")
     ]
 
 
@@ -88,6 +94,12 @@ def insert_known_images():
             "training/students/s3-2.jpeg",
             "training/students/s3-3.jpeg",
             "training/students/s3-4.jpeg",
+        ]),
+        ("104","Vedanti Shukla",[ 
+            "training/students/s4-1.jpeg",
+            "training/students/s4-2.jpeg",
+            "training/students/s4-3.jpeg",
+            "training/students/s4-4.jpeg",
         ])
     ]
     for roll_no, name, image_paths in students:
@@ -128,7 +140,7 @@ def encode_known_faces(student_n_images: list, model: str = "hog", encodings_loc
 
 # --- 7. helper function for comparing faces ---
 def _recognize_face(unknown_encoding, loaded_encodings):
-    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.51)
+    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.50)
     votes = Counter(roll for match, roll in zip(boolean_matches, loaded_encodings["rolls"])if match)
     if votes:
         return votes.most_common(1)[0][0]
@@ -152,7 +164,7 @@ def mark_attendence( image_location: str, model: str = "hog",encodings_location:
             print(roll)
 
 create_table()
-# set_absent()
+set_absent()
 # insert_known_images()
 # roll_n_images=get_images_n_rolls()
 # encode_known_faces(roll_n_images)
