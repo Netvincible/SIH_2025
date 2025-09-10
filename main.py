@@ -34,7 +34,7 @@ def create_table():
                 id INT AUTO_INCREMENT PRIMARY KEY, 
                 roll_no VARCHAR(20) ,
                 name VARCHAR(20),
-                image LONGBLOB,
+                image LONGBLOB UNIQUE,
                 CONSTRAINT fk_attendance_roll
                 FOREIGN KEY(roll_no) REFERENCES attendance_2(roll_no)
                 ON DELETE CASCADE
@@ -49,12 +49,19 @@ def convert_to_binary(filename):
 
 # --- 3. Insert into attendance table --- 
 def set_absent():
+    today=date.today()
+    cursor.execute("""SELECT 1 FROM attendance_2 WHERE attendance_date = %s LIMIT 1;""",(today,))
+    is_marked=cursor.fetchall()
+    if(is_marked):
+        print("attendance is already marked for this day: ",today)
+        return
     manual_attendance = [
-        ("Nisarg Patel", 101, date(2025, 9, 9),"A"),
-        ("Devang Ajudiya",102,date(2025, 9, 9),"A"),
-        ("Netra Patel",103,date(2025, 9, 9),"A"),
-        ("Vedanti Shukla",104,date(2025, 9, 9),"A"),
-        ("Prince Panara",105,date(2025,9,9),"A")
+        ("Nisarg Patel", 101,today,"A"),
+        ("Devang Ajudiya",102,today,"A"),
+        ("Netra Sorathiya",103,today,"A"),
+        ("Vedanti Shukla",104,today,"A"),
+        ("Prince Panara",105,today,"A"),
+        ("Hitarth Bhatt",106,today,"A")
     ]
 
 
@@ -69,47 +76,35 @@ def set_absent():
             pass
 
 # --- 4. Insert 5 images per student into student_images ---
-def insert_known_images():
-    students = [
-        ("101","Nisarg Patel",[
-            "training/students/s1-1.jpeg",
-            "training/students/s1-2.jpeg",
-            "training/students/s1-3.jpeg",
-            "training/students/s1-4.jpeg",
-            "training/students/s1-5.jpeg",
-        ]),
-        ("102","Devang Ajudiya",[ 
-            "training/students/s2-1.jpeg",
-            "training/students/s2-2.jpeg",
-            "training/students/s2-3.jpeg",
-            "training/students/s2-4.jpeg",
-            "training/students/s2-5.jpeg",
-        ]),
-        ("103","Netra Patel",[ 
-            "training/students/s3-1.jpeg",
-            "training/students/s3-2.jpeg",
-            "training/students/s3-3.jpeg",
-            "training/students/s3-4.jpeg",
-        ]),
-        ("104","Vedanti Shukla",[ 
-            "training/students/s4-1.jpeg",
-            "training/students/s4-2.jpeg",
-            "training/students/s4-3.jpeg",
-            "training/students/s4-4.jpeg",
-        ])
-    ]
+def insert_known_images(students):
+    count=0
     for roll_no, name, image_paths in students:
+        cursor.execute("""SELECT 1 FROM student_images WHERE roll_no = %s LIMIT 1;""",(roll_no,))
+        is_roll=cursor.fetchall()
+        if(is_roll):
+            count+=1
+            continue
         for img_path in image_paths:
             if not os.path.exists(img_path):
                 print(f"Warning: Image not found: {img_path}, skipping...")
                 continue
             img_data = convert_to_binary(img_path)
-            cursor.execute("""
-            INSERT INTO student_images (roll_no,name,image) VALUES (%s, %s, %s)
-            """, (roll_no,name,img_data))
+            try:
+                cursor.execute("""
+                INSERT INTO student_images (roll_no,name,image) VALUES (%s, %s, %s)
+                """, (roll_no,name,img_data))
+                conn.commit()
+            except :
+                print("same image was inserted")
+
         conn.commit()
 
-    print(" Manual attendance + student_images inserted successfully")
+    if(count==len(students)):
+        print("student images are already inserted")
+        return False
+    else:
+        print(" Manual attendance + student_images inserted successfully")
+        return True
 
 # --- 5. Fetch roll_no + images ---
 def get_images_n_rolls():
@@ -122,6 +117,7 @@ def encode_known_faces(student_n_images: list, model: str = "hog", encodings_loc
     rolls = []
     encodings = []
     for roll,img in student_n_images:
+        roll=int(roll)
         image_stream=BytesIO(img)
         student_image=face_recognition.load_image_file(image_stream)
         face_locations = face_recognition.face_locations(student_image, model=model)
@@ -136,36 +132,69 @@ def encode_known_faces(student_n_images: list, model: str = "hog", encodings_loc
 
 # --- 7. helper function for comparing faces ---
 def _recognize_face(unknown_encoding, loaded_encodings):
-    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.50)
+    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.45)
     votes = Counter(roll for match, roll in zip(boolean_matches, loaded_encodings["rolls"])if match)
     if votes:
         return votes.most_common(1)[0][0]
 
-# --- 8. recognizing faces in input image and marking attendence ---
-def mark_attendence( image_location: str, model: str = "hog",encodings_location: Path = DEFAULT_ENCODINGS_PATH,) -> None:
+# --- 8. recognizing faces in input image and marking attendance ---
+def mark_attendance( image_location: str, model: str = "hog",encodings_location: Path = DEFAULT_ENCODINGS_PATH,) -> None:
     with encodings_location.open(mode="rb") as f:
         loaded_encodings = pickle.load(f)
 
     input_image = face_recognition.load_image_file(image_location)
-    input_face_locations = face_recognition.face_locations(input_image, model=model)
+    input_face_locations = face_recognition.face_locations(input_image, model=model,number_of_times_to_upsample=2)
     input_face_encodings = face_recognition.face_encodings(input_image, input_face_locations)
     for bounding_box, unknown_encoding in zip(input_face_locations, input_face_encodings):
         roll = _recognize_face(unknown_encoding, loaded_encodings)
         if roll:
             roll=int(roll)
-            val=("P",roll,date(2025, 9, 9))
-            cursor.execute("""UPDATE attendance_2 SET status=%s WHERE roll_no=%s AND attendance_date=%s""",val)
+            val=("P",roll,date.today())
+            sql="UPDATE attendance_2 SET status=%s WHERE roll_no=%s AND attendance_date=%s"
+            cursor.execute(sql,val)
             conn.commit()
-            print(type(val[0]),type(val[1]),type(val[2]))
             print(roll)
 
 create_table()
 set_absent()
-insert_known_images()
-roll_n_images=get_images_n_rolls()
-# encode_known_faces(roll_n_images)
+students = [
+        (101,"Nisarg Patel",[
+            "training/students/s1-1.jpeg",
+            "training/students/s1-2.jpeg",
+            "training/students/s1-3.jpeg",
+            "training/students/s1-4.jpeg",
+            "training/students/s1-5.jpeg",
+        ]),
+        (102,"Devang Ajudiya",[ 
+            "training/students/s2-1.jpeg",
+            "training/students/s2-2.jpeg",
+            "training/students/s2-3.jpeg",
+            "training/students/s2-4.jpeg",
+            "training/students/s2-5.jpeg",
+        ]),
+        (103,"Netra Sorathiya",[ 
+            "training/students/s3-1.jpeg",
+            "training/students/s3-2.jpeg",
+            "training/students/s3-3.jpeg",
+            "training/students/s3-4.jpeg",
+        ]),
+        (104,"Vedanti Shukla",[ 
+            "training/students/s4-1.jpeg",
+            "training/students/s4-2.jpeg",
+            "training/students/s4-3.jpeg",
+        ]),
+        (105,"Prince Panara",[ 
+            "training/students/s5-1.jpeg",
+            "training/students/s5-2.jpeg",
+            "training/students/s5-3.jpeg",
+            "training/students/s5-4.jpeg"
+        ])
+    ]
+if(len(students)>0 and insert_known_images(students)):  #check for len of students as in future we plan to get students list from webpage's backend
+    roll_n_images=get_images_n_rolls()
+    encode_known_faces(roll_n_images)
 file=next(Path("Webpage/students").glob("*.jp*g"))
-mark_attendence(file)
+mark_attendance(file)
 os.remove(file)
 
 cursor.close()

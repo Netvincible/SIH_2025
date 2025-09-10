@@ -75,7 +75,7 @@ app.post("/students", upload.single("photo"), (req, res) => {
   });
 
   process.stderr.on("data", (data) => {
-    console.error("❌ Python Error:", data.toString());
+    console.error("Python says:", data.toString());
   });
 
   process.on("close", (code) => {
