@@ -128,7 +128,7 @@ def encode_known_faces(student_n_images: list, model: str = "hog", encodings_loc
 
 # --- 7. helper function for comparing faces ---
 def _recognize_face(unknown_encoding, loaded_encodings):
-    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.52)
+    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.51)
     votes = Counter(roll for match, roll in zip(boolean_matches, loaded_encodings["rolls"])if match)
     if votes:
         return votes.most_common(1)[0][0]
@@ -151,14 +151,14 @@ def mark_attendence( image_location: str, model: str = "hog",encodings_location:
             print(type(val[0]),type(val[1]),type(val[2]))
             print(roll)
 
-# create_table()
+create_table()
 # set_absent()
 # insert_known_images()
 # roll_n_images=get_images_n_rolls()
 # encode_known_faces(roll_n_images)
 file=next(Path("Webpage/students").glob("*.jp*g"))
 mark_attendence(file)
-# os.remove(file)
+os.remove(file)
 
 cursor.close()
 conn.close()

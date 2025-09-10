@@ -3,7 +3,8 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import mysql from "mysql2"; 
+import mysql from "mysql2";
+import { spawn } from "child_process"; 
 
 // Setup __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -18,9 +19,9 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
+  host: "127.0.0.1",
+  user: "netvincible",
+  password: "12345678",
   database:"schoolDB"
 });
 
@@ -67,10 +68,30 @@ app.post("/students", upload.single("photo"), (req, res) => {
 
   console.log("✅ Photo uploaded:", req.file);
 
-  res.json({
-    message: "Photo uploaded successfully!",
-    filePath: `/students/${req.file.filename}`
+  const process=spawn("python3", ["main.py", req.file.path]);
+  let output ="";
+  process.stdout.on("data",(data)=>{
+    output+=data.toString();
   });
+
+  process.stderr.on("data", (data) => {
+    console.error("❌ Python Error:", data.toString());
+  });
+
+  process.on("close", (code) => {
+    console.log(`✅ Python script exited with code ${code}`);
+
+    res.json({
+      message: "Photo uploaded successfully and Python script executed!",
+      filePath: `/students/${req.file.filename}`,
+      pythonOutput: output.trim()
+    });
+  });
+
+  // res.json({
+  //   message: "Photo uploaded successfully!",
+  //   filePath: `/students/${req.file.filename}`
+  // });
 });
 
 // Error handling middleware
@@ -80,7 +101,8 @@ app.use((err, req, res, next) => {
 });
 
 app.get("/attendance", (req, res) => {
-  const query = "SELECT roll_no, name, total_lectures, present, absent FROM attendance";
+  db.query("use schoolDB;");
+  const query = "SELECT roll_no, name, status from attendance_2";
   db.query(query, (err, results) => {
     if (err) {
       console.error("❌ Database query error:", err);
@@ -91,7 +113,7 @@ app.get("/attendance", (req, res) => {
 });
 
 // Start server
-const PORT = 3000;
+const PORT = 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

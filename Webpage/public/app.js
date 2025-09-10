@@ -33,7 +33,7 @@ document.getElementById("attendenceBtn").onclick = async () => {
       document.getElementById("para").innerText = "✅ Attendance fetched!";
 
       const text = data.map(a =>
-      `Roll No: ${a.roll_no}, Name: ${a.name}, Present: ${a.present}/${a.total_lectures}`)
+      `Roll No: ${a.roll_no}, Name: ${a.name}, Status: ${a.status}`)
       .join("<br>");
         //alert("Attendance: " + JSON.stringify(data.attendance));
         document.getElementById("para").innerHTML = text;
