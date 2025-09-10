@@ -67,14 +67,8 @@ app.post("/students", upload.single("photo"), (req, res) => {
   }
 
   console.log("✅ Photo uploaded:", req.file);
-//   setTimeout(function() {
-//   const process=spawn("python3", ["main.py", req.file.path]);
-//   let output ="";
-//   process.stdout.on("data",(data)=>{
-//     output+=data.toString();
-//   });
-// }, 2000);
-  const process=spawn("python3", ["main.py", req.file.path]);
+  setTimeout(()=> {
+      const process=spawn("python3", ["main.py", req.file.path]);
   let output ="";
   process.stdout.on("data",(data)=>{
     output+=data.toString();
@@ -86,6 +80,20 @@ app.post("/students", upload.single("photo"), (req, res) => {
 
   process.on("close", (code) => {
     console.log(`✅ Python script exited with code ${code}`);
+  }, 3000);
+
+  // const process=spawn("python3", ["main.py", req.file.path]);
+  // let output ="";
+  // process.stdout.on("data",(data)=>{
+  //   output+=data.toString();
+  // });
+
+  // process.stderr.on("data", (data) => {
+  //   console.error("❌ Python Error:", data.toString());
+  // });
+
+  // process.on("close", (code) => {
+  //   console.log(`✅ Python script exited with code ${code}`);
 
     res.json({
       message: "Photo uploaded successfully and Python script executed!",

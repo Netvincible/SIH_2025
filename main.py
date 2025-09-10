@@ -49,16 +49,12 @@ def convert_to_binary(filename):
 
 # --- 3. Insert into attendance table --- 
 def set_absent():
-    today=datetime.today()
-    cursor.execute("""select count(*) where attendance_date=%s;""",today)
-    exists=cursor.fetchall()
-    if(exists):
-        return
     manual_attendance = [
-        ("Nisarg Patel", 101, today,"A"),
-        ("Devang Ajudiya",102,today,"A"),
-        ("Netra Patel",103,today,"A"),
-        ("Vedanti Shukla",104,today,"A")
+        ("Nisarg Patel", 101, date(2025, 9, 9),"A"),
+        ("Devang Ajudiya",102,date(2025, 9, 9),"A"),
+        ("Netra Patel",103,date(2025, 9, 9),"A"),
+        ("Vedanti Shukla",104,date(2025, 9, 9),"A"),
+        ("Prince Panara",105,date(2025,9,9),"A")
     ]
 
 
@@ -89,7 +85,7 @@ def insert_known_images():
             "training/students/s2-4.jpeg",
             "training/students/s2-5.jpeg",
         ]),
-        ("103","Netra Sorathiya",[ 
+        ("103","Netra Patel",[ 
             "training/students/s3-1.jpeg",
             "training/students/s3-2.jpeg",
             "training/students/s3-3.jpeg",
@@ -165,8 +161,8 @@ def mark_attendence( image_location: str, model: str = "hog",encodings_location:
 
 create_table()
 set_absent()
-# insert_known_images()
-# roll_n_images=get_images_n_rolls()
+insert_known_images()
+roll_n_images=get_images_n_rolls()
 # encode_known_faces(roll_n_images)
 file=next(Path("Webpage/students").glob("*.jp*g"))
 mark_attendence(file)
