@@ -27,10 +27,10 @@ const db = mysql.createConnection({
 
 db.connect((err) => {
   if (err) {
-    console.error("❌ Database connection failed:", err);
+    console.error("Database connection failed:", err);
     return;
   }
-  console.log("✅ Connected to the database.");
+  console.log("Connected to the database.");
 });
 
 // Configure multer storage
@@ -66,20 +66,21 @@ app.post("/students", upload.single("photo"), (req, res) => {
     return res.status(400).json({ error: "No photo uploaded" });
   }
 
-  console.log("✅ Photo uploaded:", req.file);
+  console.log("Photo uploaded:", req.file);
   setTimeout(()=> {
       const process=spawn("python3", ["main.py", req.file.path]);
   let output ="";
   process.stdout.on("data",(data)=>{
     output+=data.toString();
-  });
+    console.log("after 1 second");
+  },1500);
 
   process.stderr.on("data", (data) => {
     console.error("Python says:", data.toString());
   });
 
   process.on("close", (code) => {
-    console.log(`✅ Python script exited with code ${code}`);
+    console.log(`Python script exited with code ${code}`);
   }, 3000);
 
   // const process=spawn("python3", ["main.py", req.file.path]);
@@ -89,11 +90,11 @@ app.post("/students", upload.single("photo"), (req, res) => {
   // });
 
   // process.stderr.on("data", (data) => {
-  //   console.error("❌ Python Error:", data.toString());
+  //   console.error("Python Error:", data.toString());
   // });
 
   // process.on("close", (code) => {
-  //   console.log(`✅ Python script exited with code ${code}`);
+  //   console.log(`Python script exited with code ${code}`);
 
     res.json({
       message: "Photo uploaded successfully and Python script executed!",
@@ -110,7 +111,7 @@ app.post("/students", upload.single("photo"), (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
+  console.error("Error:", err.message);
   res.status(500).json({ error: err.message });
 });
 
@@ -119,7 +120,7 @@ app.get("/attendance", (req, res) => {
   const query = "SELECT roll_no, name, status from attendance_2";
   db.query(query, (err, results) => {
     if (err) {
-      console.error("❌ Database query error:", err);
+      console.error("Database query error:", err);
       return res.status(500).json({ error: "Database query error" });
     }
     res.json(results);
@@ -129,5 +130,5 @@ app.get("/attendance", (req, res) => {
 // Start server
 const PORT = 8080;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

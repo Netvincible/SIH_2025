@@ -61,7 +61,9 @@ def set_absent():
         ("Netra Sorathiya",103,today,"A"),
         ("Vedanti Shukla",104,today,"A"),
         ("Prince Panara",105,today,"A"),
-        ("Hitarth Bhatt",106,today,"A")
+        ("Hitarth Bhatt",106,today,"A"),
+
+
     ]
 
 
@@ -121,7 +123,7 @@ def encode_known_faces(student_n_images: list, model: str = "hog", encodings_loc
         image_stream=BytesIO(img)
         student_image=face_recognition.load_image_file(image_stream)
         face_locations = face_recognition.face_locations(student_image, model=model)
-        face_encodings = face_recognition.face_encodings(student_image, face_locations)
+        face_encodings = face_recognition.face_encodings(student_image, face_locations,num_jitters=5)
         for encoding in face_encodings:
             rolls.append(roll)
             encodings.append(encoding)
@@ -132,7 +134,7 @@ def encode_known_faces(student_n_images: list, model: str = "hog", encodings_loc
 
 # --- 7. helper function for comparing faces ---
 def _recognize_face(unknown_encoding, loaded_encodings):
-    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.45)
+    boolean_matches = face_recognition.compare_faces(loaded_encodings["encodings"], unknown_encoding,tolerance=0.42)
     votes = Counter(roll for match, roll in zip(boolean_matches, loaded_encodings["rolls"])if match)
     if votes:
         return votes.most_common(1)[0][0]
@@ -144,7 +146,7 @@ def mark_attendance( image_location: str, model: str = "hog",encodings_location:
 
     input_image = face_recognition.load_image_file(image_location)
     input_face_locations = face_recognition.face_locations(input_image, model=model,number_of_times_to_upsample=2)
-    input_face_encodings = face_recognition.face_encodings(input_image, input_face_locations)
+    input_face_encodings = face_recognition.face_encodings(input_image, input_face_locations,num_jitters=5)
     for bounding_box, unknown_encoding in zip(input_face_locations, input_face_encodings):
         roll = _recognize_face(unknown_encoding, loaded_encodings)
         if roll:
@@ -169,8 +171,7 @@ students = [
             "training/students/s2-1.jpeg",
             "training/students/s2-2.jpeg",
             "training/students/s2-3.jpeg",
-            "training/students/s2-4.jpeg",
-            "training/students/s2-5.jpeg",
+            "training/students/s2-4.jpeg"
         ]),
         (103,"Netra Sorathiya",[ 
             "training/students/s3-1.jpeg",
@@ -188,6 +189,13 @@ students = [
             "training/students/s5-2.jpeg",
             "training/students/s5-3.jpeg",
             "training/students/s5-4.jpeg"
+        ]),
+        (106,"Hitarth Bhatt",[ 
+            "training/students/s6-1.jpeg",
+            "training/students/s6-2.jpeg",
+            "training/students/s6-3.jpeg",
+            "training/students/s6-4.jpeg",
+            "training/students/s6-5.jpeg"
         ])
     ]
 if(len(students)>0 and insert_known_images(students)):  #check for len of students as in future we plan to get students list from webpage's backend
